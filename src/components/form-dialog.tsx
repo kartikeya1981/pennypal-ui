@@ -86,10 +86,10 @@ export function FormDialog({
             const fd = new FormData(e.currentTarget)
             startTransition(() => formAction(fd))
           }}
-          className="grid gap-4"
+          className="grid min-w-0 gap-4"
         >
           <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">{children}</div>
-          {state?.error && <p role="alert" className="text-sm text-destructive">{state.error}</p>}
+          {state?.error && <p role="alert" className="text-sm text-destructive [overflow-wrap:anywhere]">{state.error}</p>}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
