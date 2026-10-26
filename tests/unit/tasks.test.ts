@@ -24,6 +24,12 @@ describe("tasks", () => {
     expect(sortTasks(list, 1).map((t) => t.id)).toEqual(["s1", "o1", "d1"])
   })
 
+  it("shows the most recently approved tasks, whatever order they were created in", () => {
+    const at = (id: string, approvedAt: string) => ({ ...task(id, "APPROVED"), approvedAt })
+    const list = [at("a", "2026-10-04"), at("b", "2026-10-01"), at("c", "2026-10-02"), at("d", "2026-10-03")]
+    expect(sortTasks(list).map((t) => t.id)).toEqual(["a", "d", "c"])
+  })
+
   it("describes due dates and repeats", () => {
     expect(taskSchedule("2026-10-31T00:00:00.000Z", "WEEKLY")).toBe("Due 31 Oct · Repeats weekly")
     expect(taskSchedule(null, "MONTHLY")).toBe("Repeats monthly")

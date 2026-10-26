@@ -69,6 +69,13 @@ test.describe("Tasks", () => {
     await shell.goto(`/kids/${kid.id}`)
     await expect(page.getByRole("article", { name: long })).toContainText("1,00,000 Kid Coins")
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+    const fits = () => page.getByRole("dialog").evaluate((d) => d.scrollWidth <= d.clientWidth)
+    for (const button of [`Edit ${long}`, "I did it"]) {
+      await page.getByRole("article", { name: long }).getByRole("button", { name: button }).click()
+      await expect(page.getByRole("dialog")).toBeVisible()
+      expect(await fits(), button).toBe(true)
+      await page.getByRole("dialog").getByRole("button", { name: "Cancel" }).click()
+    }
 
     const dialog = page.getByRole("dialog")
     await page.getByRole("button", { name: "Add task" }).click()

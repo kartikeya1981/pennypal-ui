@@ -76,8 +76,8 @@ export function FormDialog({
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          {description && <DialogDescription>{description}</DialogDescription>}
+          <DialogTitle className="[overflow-wrap:anywhere]">{title}</DialogTitle>
+          {description && <DialogDescription className="[overflow-wrap:anywhere]">{description}</DialogDescription>}
         </DialogHeader>
         <form
           // Submit via onSubmit rather than `action` so React doesn't reset the fields when the API rejects them.
@@ -88,7 +88,7 @@ export function FormDialog({
           }}
           className="grid gap-4"
         >
-          <div className="grid gap-3 sm:grid-cols-2">{children}</div>
+          <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">{children}</div>
           {state?.error && <p role="alert" className="text-sm text-destructive">{state.error}</p>}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
