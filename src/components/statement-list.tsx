@@ -2,7 +2,7 @@ import { entryTitle, plainNumber, shortDate, signed } from "@/lib/format"
 import type { StatementRow } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
-const ICONS: Record<string, string> = { MONTHLY_EARNING: "📅", EXTRA_EARNING: "⭐", TASK_EARNING: "✅", TRANSFER: "🔁" }
+const ICONS: Record<string, string> = { MONTHLY_EARNING: "📅", EXTRA_EARNING: "⭐", TASK_EARNING: "✅", TRANSFER: "🔁", PAYOUT: "💵" }
 
 export function StatementList({ rows }: { rows: StatementRow[] }) {
   return (

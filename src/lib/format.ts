@@ -64,6 +64,7 @@ export function entryTitle(type: string, note: string | null) {
   if (type === "MONTHLY_EARNING") return `Monthly Earning${note ? ` · ${note}` : ""}`
   if (type === "EXTRA_EARNING") return `Extra earning${note ? ` · ${note}` : ""}`
   if (type === "TASK_EARNING") return `Task reward${note ? ` · ${note}` : ""}`
+  if (type === "PAYOUT") return `Cash out${note ? ` · ${note}` : ""}`
   return note ?? "Moved Kid Coins"
 }
 
@@ -82,4 +83,9 @@ export function taskSchedule(dueDate: string | Date | null, recurrence: string) 
     : null
   const repeat = recurrence === "WEEKLY" ? "Repeats weekly" : recurrence === "MONTHLY" ? "Repeats monthly" : null
   return [due, repeat].filter(Boolean).join(" · ")
+}
+
+/** Goals that can still receive Kid Coins (not yet achieved). */
+export function openGoals<T extends { status: string }>(goals: T[]) {
+  return goals.filter((g) => g.status !== "ACHIEVED")
 }

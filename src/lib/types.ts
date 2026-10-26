@@ -3,6 +3,8 @@ export type User = {
   name: string
   email: string
   createdAt: Date
+  /** Whether a Kid Mode PIN has been set. */
+  hasKidModePin: boolean
 }
 
 export type Kid = {
@@ -29,8 +31,8 @@ export type Goal = {
   name: string
   emoji: string
   targetAmount: number
-  /** READY once the jar reaches the target. */
-  status: "ACTIVE" | "READY"
+  /** READY once the jar reaches the target; ACHIEVED once the full jar was cashed out. */
+  status: "ACTIVE" | "READY" | "ACHIEVED"
   /** Share of each Monthly Earning moved into this goal's jar. */
   allocationType: AllocationType
   allocationValue: number
@@ -54,7 +56,7 @@ export type StatementLeg = { goalId: string | null; goalName: string | null; goa
 
 export type StatementRow = {
   id: string
-  type: "MONTHLY_EARNING" | "EXTRA_EARNING" | "TASK_EARNING" | "TRANSFER"
+  type: "MONTHLY_EARNING" | "EXTRA_EARNING" | "TASK_EARNING" | "TRANSFER" | "PAYOUT"
   note: string | null
   createdAt: Date
   /** Net change to the kid's total balance. */
@@ -80,4 +82,13 @@ export type Task = {
   submittedAt: string | Date | null
   approvedAt: string | Date | null
   createdAt: string | Date
+}
+
+export type KidBadge = {
+  code: string
+  emoji: string
+  name: string
+  description: string
+  /** null until the kid earns it. */
+  earnedAt: Date | null
 }

@@ -4,9 +4,11 @@ A mobile-first web app that helps parents teach kids under 18 how to manage mone
 
 ## Status
 
-Milestone 1 (this scaffold): parent sign-up / sign-in, kid profiles (name, avatar, birth year, monthly earning and earning day), a phone-friendly layout with a bottom tab bar, and an installable web app manifest.
+- **M1:** parent sign-up / sign-in, kid profiles, a phone-friendly layout with a bottom tab bar, and an installable web app manifest.
+- **M2–M3:** Kid Coins ledger with a Wallet and goal jars, monthly split rules, Monthly and extra earnings, statements, and tasks the kid marks "I did it" for the parent to approve.
+- **M4:** cash-outs (real money handed over, debited from the Wallet or a goal), moving coins between pots, achieved goals, and **Kid Mode**: a kid-friendly screen on the parent's device (balance, goal jars, tasks, badges, a money tip, money in & out) that only the parent's 4-digit PIN can leave. The PIN is set in Settings or the first time Kid Mode starts.
 
-Coming next: the Kid Coins ledger and goals, monthly auto-allocation, tasks, payouts, statements and Kid Mode.
+Coming next: notifications, charts and a hosted deployment.
 
 ## Architecture
 
@@ -26,7 +28,7 @@ cp .env.example .env          # set API_URL if the API is not on http://localhos
 npm run dev                   # http://localhost:3000
 ```
 
-Demo login (after seeding the API): `demo@pennypal.app` / `demo1234`.
+Demo login (after seeding the API): `demo@pennypal.app` / `demo1234`, Kid Mode PIN `1234`.
 
 Scripts: `npm run build` + `npm start` (production), `npm run lint`, `npm run typecheck`.
 
@@ -39,6 +41,7 @@ Layouts are built for phones first: on small screens navigation moves to a botto
 ```
 src/app/(auth)/        login & register
 src/app/(app)/         signed-in pages (family dashboard, kid profile, settings)
+src/app/kid/           Kid Mode screen (src/middleware.ts keeps the device there until the PIN is entered)
 src/app/manifest.ts    web app manifest
 src/components/        app shell, kid form, Kid Coins display, shadcn/ui components
 src/lib/api.ts         API client (token cookie, date parsing, 401 handling)

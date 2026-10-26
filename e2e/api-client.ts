@@ -74,6 +74,18 @@ export class PennyPalApi {
     return this.post<{ id: string; title: string }>(`/kids/${kidId}/tasks`, { title: "Finish reading a book", reward: 50, ...o })
   }
 
+  payout(kidId: string, data: Record<string, unknown>) {
+    return this.post(`/kids/${kidId}/payouts`, data)
+  }
+
+  transfer(kidId: string, data: Record<string, unknown>) {
+    return this.post(`/kids/${kidId}/transfers`, data)
+  }
+
+  setPin(pin: string) {
+    return this.put("/me/kid-mode-pin", { pin, password: this.user.password })
+  }
+
   dispose() {
     return this.ctx.dispose()
   }
