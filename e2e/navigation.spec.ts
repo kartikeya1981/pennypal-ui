@@ -25,7 +25,9 @@ test.describe("mobile layout", () => {
   test("uses a bottom tab bar on phones and fits the screen width @mobile", async ({ api, shell, authedPage: page, isMobile }) => {
     test.skip(!isMobile, "phone-only layout checks")
     const kid = await api.addKid({ name: "1234567890".repeat(4) })
-    for (const path of ["/dashboard", `/kids/${kid.id}`, "/settings"]) {
+    const goal = await api.addGoal(kid.id, { name: "abcdefghij".repeat(4) })
+    await api.earn(kid.id, { kind: "EXTRA", amount: 1_000_000, note: "x".repeat(80), goalId: goal.id })
+    for (const path of ["/dashboard", `/kids/${kid.id}`, `/kids/${kid.id}/statement`, "/settings"]) {
       await shell.goto(path)
       const nav = shell.nav()
       await expect(nav).toHaveCount(1)

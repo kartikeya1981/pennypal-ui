@@ -18,3 +18,48 @@ export type Kid = {
   createdAt: Date
   updatedAt: Date
 }
+
+export type KidWithBalance = Kid & { balance: number }
+
+export type AllocationType = "NONE" | "PERCENT" | "FIXED"
+
+export type Goal = {
+  id: string
+  kidId: string
+  name: string
+  emoji: string
+  targetAmount: number
+  /** READY once the jar reaches the target. */
+  status: "ACTIVE" | "READY"
+  /** Share of each Monthly Earning moved into this goal's jar. */
+  allocationType: AllocationType
+  allocationValue: number
+  /** Kid Coins currently in this goal's jar. */
+  balance: number
+}
+
+export type Account = {
+  total: number
+  /** Kid Coins not in any goal ("free to use"). */
+  wallet: number
+  goals: Goal[]
+  /** Months ("2026-10") whose Monthly Earning has been added. */
+  creditedMonths: string[]
+  currentMonth: string
+}
+
+export type SplitPreview = { shares: { goalId: string; amount: number }[]; wallet: number }
+
+export type StatementLeg = { goalId: string | null; goalName: string | null; goalEmoji: string | null; amount: number }
+
+export type StatementRow = {
+  id: string
+  type: "MONTHLY_EARNING" | "EXTRA_EARNING" | "TRANSFER"
+  note: string | null
+  createdAt: Date
+  /** Net change to the kid's total balance. */
+  amount: number
+  balanceAfter: number
+  /** Net change per pot (Wallet or goal jar). */
+  legs: StatementLeg[]
+}

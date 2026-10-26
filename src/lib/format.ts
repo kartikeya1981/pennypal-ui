@@ -27,6 +27,45 @@ export function earningSchedule(day: number) {
   return day >= 29 ? `on the ${ordinal(day)} (or the last day of shorter months)` : `on the ${ordinal(day)} of every month`
 }
 
+/** "+500", "−200" or "0" (true minus sign). */
+export function signed(amount: number) {
+  return `${amount > 0 ? "+" : amount < 0 ? "−" : ""}${number.format(Math.abs(amount))}`
+}
+
+export function plainNumber(amount: number) {
+  return number.format(amount)
+}
+
+/** "2026-10" -> "October 2026" */
+export function monthLabel(month: string) {
+  return new Date(`${month}-01T00:00:00Z`).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" })
+}
+
+/** The `count` months ending at `current` ("2026-10"), newest first. */
+export function recentMonths(current: string, count = 12) {
+  const [y, m] = current.split("-").map(Number)
+  return Array.from({ length: count }, (_, i) => {
+    const d = new Date(Date.UTC(y, m - 1 - i, 1))
+    return d.toISOString().slice(0, 7)
+  })
+}
+
+export function shortDate(d: Date) {
+  return d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })
+}
+
+export function splitRuleLabel(type: string, value: number) {
+  if (type === "PERCENT") return `Gets ${value}% of each Monthly Earning`
+  if (type === "FIXED") return `Gets ${coins(value)} each month`
+  return "No monthly share yet"
+}
+
+export function entryTitle(type: string, note: string | null) {
+  if (type === "MONTHLY_EARNING") return `Monthly Earning${note ? ` · ${note}` : ""}`
+  if (type === "EXTRA_EARNING") return `Extra earning${note ? ` · ${note}` : ""}`
+  return note ?? "Moved Kid Coins"
+}
+
 export function firstName(name: string) {
   return name.trim().split(/\s+/)[0] ?? name
 }

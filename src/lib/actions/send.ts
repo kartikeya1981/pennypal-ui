@@ -4,9 +4,13 @@ import { redirect } from "next/navigation"
 import { ApiError, apiFetch } from "@/lib/api"
 import type { ActionResult } from "./types"
 
-export async function send(path: string, method: "POST" | "PUT" | "DELETE", fd?: FormData): Promise<ActionResult> {
+export async function send(
+  path: string,
+  method: "POST" | "PUT" | "DELETE",
+  body?: FormData | Record<string, unknown>
+): Promise<ActionResult> {
   try {
-    await apiFetch(path, { method, body: fd ? Object.fromEntries(fd) : undefined })
+    await apiFetch(path, { method, body: body instanceof FormData ? Object.fromEntries(body) : body })
   } catch (e) {
     if (!(e instanceof ApiError)) throw e
     if (e.status === 401) redirect("/login")

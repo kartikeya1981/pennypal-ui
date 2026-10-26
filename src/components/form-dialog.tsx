@@ -24,6 +24,9 @@ type Props = {
   action: (fd: FormData) => Promise<ActionResult>
   children: React.ReactNode
   submitLabel?: string
+  successMessage?: string
+  /** Replaces the + icon on "add" triggers. */
+  icon?: React.ReactNode
 }
 
 export function FormDialog({
@@ -35,6 +38,8 @@ export function FormDialog({
   action,
   children,
   submitLabel = "Save",
+  successMessage = "Saved",
+  icon,
 }: Props) {
   const [open, setOpen] = useState(false)
   const [state, formAction, pending] = useActionState(
@@ -42,7 +47,7 @@ export function FormDialog({
       const res = await action(fd)
       if (res.ok) {
         setOpen(false)
-        toast.success("Saved")
+        toast.success(successMessage)
       }
       return res
     },
@@ -62,7 +67,7 @@ export function FormDialog({
       >
         {mode === "add" ? (
           <>
-            <Plus />
+            {icon ?? <Plus />}
             {label ?? "Add"}
           </>
         ) : (

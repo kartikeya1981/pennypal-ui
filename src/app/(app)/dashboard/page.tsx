@@ -8,12 +8,12 @@ import { PageHeader } from "@/components/page-header"
 import { Card, CardContent } from "@/components/ui/card"
 import { api } from "@/lib/api"
 import { createKid } from "@/lib/actions/kids"
-import { ageLabel, earningSchedule, firstName } from "@/lib/format"
+import { ageLabel, coins, earningSchedule, firstName } from "@/lib/format"
 import { requireUser } from "@/lib/session"
-import type { Kid } from "@/lib/types"
+import type { KidWithBalance } from "@/lib/types"
 
 export default async function DashboardPage() {
-  const [user, kids] = await Promise.all([requireUser(), api<Kid[]>("/kids")])
+  const [user, kids] = await Promise.all([requireUser(), api<KidWithBalance[]>("/kids")])
   return (
     <>
       <PageHeader title={`Hi ${firstName(user.name)}`} description="Your family's PennyPal accounts">
@@ -36,8 +36,11 @@ export default async function DashboardPage() {
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-lg font-bold">{kid.name}</p>
                       <p className="text-xs text-muted-foreground">{ageLabel(kid.birthYear)}</p>
-                      <p className="mt-1 text-sm">
-                        <Coins amount={kid.monthlyEarning} className="text-coin-foreground" /> <span className="text-muted-foreground">/ month</span>
+                      <p className="mt-1 text-sm" aria-label="Balance">
+                        <Coins amount={kid.balance} className="text-coin-foreground" />
+                      </p>
+                      <p className="text-xs">
+                        <span className="font-semibold">+{coins(kid.monthlyEarning)}</span> <span className="text-muted-foreground">/ month</span>
                       </p>
                       <p className="text-xs text-muted-foreground">{earningSchedule(kid.earningDay)}</p>
                     </div>

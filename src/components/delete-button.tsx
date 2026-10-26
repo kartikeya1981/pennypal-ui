@@ -6,15 +6,17 @@ import { Button } from "@/components/ui/button"
 export function DeleteButton({
   action,
   label = "this item",
+  confirmText,
 }: {
   action: () => Promise<void>
   label?: string
+  confirmText?: string
 }) {
   return (
     <form
       action={action}
       onSubmit={(e) => {
-        if (!confirm(`Delete ${label}?`)) e.preventDefault()
+        if (!confirm(confirmText ?? `Delete ${label}?`)) e.preventDefault()
       }}
     >
       <Button type="submit" variant="ghost" size="icon-sm" aria-label={`Delete ${label}`}>

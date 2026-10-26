@@ -58,6 +58,18 @@ export class PennyPalApi {
     return this.post<{ id: string; name: string }>("/kids", kidData(o))
   }
 
+  addGoal(kidId: string, o: Record<string, unknown> = {}) {
+    return this.post<{ id: string; name: string }>(`/kids/${kidId}/goals`, { name: "Video game", emoji: "🎮", targetAmount: 1000, ...o })
+  }
+
+  setSplit(kidId: string, rules: { goalId: string; type: "NONE" | "PERCENT" | "FIXED"; value: number }[]) {
+    return this.put(`/kids/${kidId}/allocations`, { rules })
+  }
+
+  earn(kidId: string, data: Record<string, unknown>) {
+    return this.post(`/kids/${kidId}/earnings`, data)
+  }
+
   dispose() {
     return this.ctx.dispose()
   }
