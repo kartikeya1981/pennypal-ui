@@ -10,22 +10,26 @@ import { KidFields } from "@/components/kid-fields"
 import { Progress } from "@/components/progress"
 import { SplitFields } from "@/components/split-fields"
 import { StatementList } from "@/components/statement-list"
+import { TaskFields } from "@/components/task-fields"
+import { TaskList } from "@/components/task-list"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { api } from "@/lib/api"
 import { addEarning, createGoal, deleteGoal, saveSplit, updateGoal } from "@/lib/actions/account"
 import { deleteKid, updateKid } from "@/lib/actions/kids"
+import { createTask } from "@/lib/actions/tasks"
 import { ageLabel, coins, earningSchedule, monthLabel, splitRuleLabel } from "@/lib/format"
 import { getKidOr404 } from "@/lib/kids"
-import type { Account, Goal, SplitPreview, StatementRow } from "@/lib/types"
+import type { Account, Goal, SplitPreview, StatementRow, Task } from "@/lib/types"
 
 export default async function KidPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const kid = await getKidOr404(id)
-  const [account, preview, statement] = await Promise.all([
+  const [account, preview, statement, tasks] = await Promise.all([
     api<Account>(`/kids/${id}/account`),
     api<SplitPreview>(`/kids/${id}/allocations/preview`),
     api<StatementRow[]>(`/kids/${id}/statement`),
+    api<Task[]>(`/kids/${id}/tasks`),
   ])
   const { goals } = account
   const thisMonthAdded = account.creditedMonths.includes(account.currentMonth)
@@ -113,6 +117,27 @@ export default async function KidPage({ params }: { params: Promise<{ id: string
               </div>
             </CardContent>
           </Card>
+
+          <section aria-labelledby="tasks-heading">
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <h2 id="tasks-heading" className="text-lg font-bold">
+                Tasks
+              </h2>
+              <FormDialog
+                title="Add a task"
+                description={`Something ${kid.name} can do to earn extra Kid Coins`}
+                label="Add task"
+                action={createTask.bind(null, kid.id)}
+              >
+                <TaskFields />
+              </FormDialog>
+            </div>
+            {tasks.length ? (
+              <TaskList tasks={tasks} goals={goals} kidName={kid.name} />
+            ) : (
+              <p className="text-sm text-muted-foreground">No tasks yet. Add one, like finishing a book or helping with chores.</p>
+            )}
+          </section>
 
           <section aria-labelledby="recent-heading">
             <div className="mb-3 flex items-center justify-between gap-2">

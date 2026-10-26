@@ -70,6 +70,10 @@ export class PennyPalApi {
     return this.post(`/kids/${kidId}/earnings`, data)
   }
 
+  addTask(kidId: string, o: Record<string, unknown> = {}) {
+    return this.post<{ id: string; title: string }>(`/kids/${kidId}/tasks`, { title: "Finish reading a book", reward: 50, ...o })
+  }
+
   dispose() {
     return this.ctx.dispose()
   }

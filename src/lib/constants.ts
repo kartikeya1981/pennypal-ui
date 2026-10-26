@@ -24,4 +24,5 @@ export const DEFAULT_GOAL_EMOJI = GOAL_EMOJIS[0]
 
 export const MAX_GOAL_TARGET = 10_000_000
 
+export const MAX_TASK_REWARD = 100_000
 export const MAX_EXTRA_EARNING = 1_000_000
