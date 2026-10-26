@@ -2,7 +2,9 @@ import "server-only"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 
-export const TOKEN_COOKIE = "pp_token"
+import { TOKEN_COOKIE } from "./cookies"
+
+export { TOKEN_COOKIE }
 const API_URL = (process.env.API_URL ?? "http://localhost:4000").replace(/\/$/, "")
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/
 

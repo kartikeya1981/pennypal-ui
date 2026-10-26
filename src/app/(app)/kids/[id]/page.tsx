@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { ArrowLeft, ArrowRight, CalendarPlus, PieChart, Star } from "lucide-react"
+import { ArrowLeft, ArrowLeftRight, ArrowRight, Banknote, CalendarPlus, PieChart, Smile, Star } from "lucide-react"
 import { Coins } from "@/components/coins"
 import { DeleteButton } from "@/components/delete-button"
 import { ExtraEarningFields, MonthlyEarningFields } from "@/components/earning-fields"
@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/empty-state"
 import { FormDialog } from "@/components/form-dialog"
 import { GoalFields } from "@/components/goal-fields"
 import { KidFields } from "@/components/kid-fields"
+import { CashOutFields, MoveCoinsFields } from "@/components/money-move-fields"
 import { Progress } from "@/components/progress"
 import { SplitFields } from "@/components/split-fields"
 import { StatementList } from "@/components/statement-list"
@@ -15,23 +16,28 @@ import { TaskList } from "@/components/task-list"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { api } from "@/lib/api"
-import { addEarning, createGoal, deleteGoal, saveSplit, updateGoal } from "@/lib/actions/account"
+import { PinFields } from "@/app/(app)/settings/kid-mode-pin-form"
+import { addEarning, cashOut, createGoal, deleteGoal, moveCoins, saveSplit, updateGoal } from "@/lib/actions/account"
+import { enterKidMode } from "@/lib/actions/kid-mode"
 import { deleteKid, updateKid } from "@/lib/actions/kids"
 import { createTask } from "@/lib/actions/tasks"
-import { ageLabel, coins, earningSchedule, monthLabel, splitRuleLabel } from "@/lib/format"
+import { ageLabel, coins, earningSchedule, firstName, monthLabel, openGoals, splitRuleLabel } from "@/lib/format"
 import { getKidOr404 } from "@/lib/kids"
+import { requireUser } from "@/lib/session"
 import type { Account, Goal, SplitPreview, StatementRow, Task } from "@/lib/types"
 
 export default async function KidPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const kid = await getKidOr404(id)
-  const [account, preview, statement, tasks] = await Promise.all([
+  const [user, account, preview, statement, tasks] = await Promise.all([
+    requireUser(),
     api<Account>(`/kids/${id}/account`),
     api<SplitPreview>(`/kids/${id}/allocations/preview`),
     api<StatementRow[]>(`/kids/${id}/statement`),
     api<Task[]>(`/kids/${id}/tasks`),
   ])
-  const { goals } = account
+  const goals = openGoals(account.goals)
+  const achieved = account.goals.filter((g) => g.status === "ACHIEVED")
   const thisMonthAdded = account.creditedMonths.includes(account.currentMonth)
   return (
     <>
@@ -47,6 +53,21 @@ export default async function KidPage({ params }: { params: Promise<{ id: string
           <p className="text-sm text-muted-foreground">{ageLabel(kid.birthYear)}</p>
         </div>
         <div className="flex items-center gap-1">
+          <FormDialog
+            title="Kid Mode"
+            description={
+              user.hasKidModePin
+                ? `Hand your device to ${firstName(kid.name)}. You'll need your PIN to leave Kid Mode.`
+                : `Hand your device to ${firstName(kid.name)}. First pick a 4-digit PIN you'll need to leave Kid Mode.`
+            }
+            label="Kid Mode"
+            variant="outline"
+            icon={<Smile />}
+            action={enterKidMode.bind(null, kid.id)}
+            submitLabel="Start Kid Mode"
+          >
+            {user.hasKidModePin ? null : <PinFields />}
+          </FormDialog>
           <FormDialog title="Edit profile" mode="edit" action={updateKid.bind(null, kid.id)}>
             <KidFields kid={kid} />
           </FormDialog>
@@ -114,6 +135,34 @@ export default async function KidPage({ params }: { params: Promise<{ id: string
                 >
                   <ExtraEarningFields goals={goals} />
                 </FormDialog>
+                {account.total > 0 && (
+                  <FormDialog
+                    title="Cash out"
+                    description={`Record real money you give ${kid.name}. The Kid Coins are taken from the Wallet or a goal.`}
+                    label="Cash out"
+                    variant="outline"
+                    icon={<Banknote />}
+                    action={cashOut.bind(null, kid.id)}
+                    submitLabel="Cash out"
+                    successMessage="Cash-out recorded"
+                  >
+                    <CashOutFields wallet={account.wallet} goals={goals} />
+                  </FormDialog>
+                )}
+                {account.total > 0 && goals.length > 0 && (
+                  <FormDialog
+                    title="Move Kid Coins"
+                    description="Move coins between the Wallet and goals"
+                    label="Move coins"
+                    variant="outline"
+                    icon={<ArrowLeftRight />}
+                    action={moveCoins.bind(null, kid.id)}
+                    submitLabel="Move"
+                    successMessage="Kid Coins moved"
+                  >
+                    <MoveCoinsFields wallet={account.wallet} goals={goals} />
+                  </FormDialog>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -133,7 +182,7 @@ export default async function KidPage({ params }: { params: Promise<{ id: string
               </FormDialog>
             </div>
             {tasks.length ? (
-              <TaskList tasks={tasks} goals={goals} kidName={kid.name} />
+              <TaskList tasks={tasks} goals={account.goals} kidName={kid.name} />
             ) : (
               <p className="text-sm text-muted-foreground">No tasks yet. Add one, like finishing a book or helping with chores.</p>
             )}
@@ -178,7 +227,7 @@ export default async function KidPage({ params }: { params: Promise<{ id: string
               </FormDialog>
             </div>
           </div>
-          {goals.length === 0 ? (
+          {goals.length === 0 && achieved.length === 0 ? (
             <EmptyState title="No goals yet" description={`Help ${kid.name} pick something to save for, like a video game or a tennis racket.`} />
           ) : (
             <>
@@ -189,7 +238,21 @@ export default async function KidPage({ params }: { params: Promise<{ id: string
                   </li>
                 ))}
               </ul>
-              {kid.monthlyEarning > 0 && <SplitPreviewNote preview={preview} goals={goals} amount={kid.monthlyEarning} />}
+              {kid.monthlyEarning > 0 && goals.length > 0 && (
+                <SplitPreviewNote preview={preview} goals={goals} amount={kid.monthlyEarning} />
+              )}
+              {achieved.length > 0 && (
+                <>
+                  <h3 className="mt-6 mb-3 font-bold">Achieved 🏆</h3>
+                  <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    {achieved.map((goal) => (
+                      <li key={goal.id} className="min-w-0">
+                        <GoalCard goal={goal} />
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
             </>
           )}
         </section>
@@ -199,6 +262,7 @@ export default async function KidPage({ params }: { params: Promise<{ id: string
 }
 
 function GoalCard({ goal }: { goal: Goal }) {
+  const done = goal.status === "ACHIEVED"
   return (
     <Card aria-label={goal.name} role="article">
       <CardContent className="grid gap-3">
@@ -208,13 +272,18 @@ function GoalCard({ goal }: { goal: Goal }) {
           </span>
           <div className="min-w-0 flex-1">
             <p className="truncate font-bold">{goal.name}</p>
-            <p className="text-xs text-muted-foreground">{splitRuleLabel(goal.allocationType, goal.allocationValue)}</p>
+            <p className="text-xs text-muted-foreground">
+              {done ? `Saved ${coins(goal.targetAmount)} and cashed out` : splitRuleLabel(goal.allocationType, goal.allocationValue)}
+            </p>
           </div>
           {goal.status === "READY" && <Badge className="bg-emerald-600 text-white">Ready!</Badge>}
+          {done && <Badge className="bg-violet-600 text-white">Achieved</Badge>}
           <div className="flex shrink-0 items-center">
-            <FormDialog title={`Edit ${goal.name}`} mode="edit" action={updateGoal.bind(null, goal.id)}>
-              <GoalFields goal={goal} />
-            </FormDialog>
+            {!done && (
+              <FormDialog title={`Edit ${goal.name}`} mode="edit" action={updateGoal.bind(null, goal.id)}>
+                <GoalFields goal={goal} />
+              </FormDialog>
+            )}
             <DeleteButton
               action={deleteGoal.bind(null, goal.id)}
               label={`${goal.name} goal`}
@@ -222,10 +291,14 @@ function GoalCard({ goal }: { goal: Goal }) {
             />
           </div>
         </div>
-        <Progress value={goal.balance} max={goal.targetAmount} label={`${goal.name} progress`} />
-        <p className="text-sm">
-          <Coins amount={goal.balance} /> <span className="text-muted-foreground">of {coins(goal.targetAmount)}</span>
-        </p>
+        {!done && (
+          <>
+            <Progress value={goal.balance} max={goal.targetAmount} label={`${goal.name} progress`} />
+            <p className="text-sm">
+              <Coins amount={goal.balance} /> <span className="text-muted-foreground">of {coins(goal.targetAmount)}</span>
+            </p>
+          </>
+        )}
       </CardContent>
     </Card>
   )

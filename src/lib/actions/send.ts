@@ -1,7 +1,10 @@
 import "server-only"
 import { revalidatePath } from "next/cache"
+import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { ApiError, apiFetch } from "@/lib/api"
+import { KID_MODE_COOKIE } from "@/lib/cookies"
+import { kidModeApiAllowed } from "@/lib/kid-mode"
 import type { ActionResult } from "./types"
 
 export async function send(
@@ -9,6 +12,9 @@ export async function send(
   method: "POST" | "PUT" | "DELETE",
   body?: FormData | Record<string, unknown>
 ): Promise<ActionResult> {
+  if ((await cookies()).has(KID_MODE_COOKIE) && !kidModeApiAllowed(method, path)) {
+    return { ok: false, error: "Ask a grown-up to leave Kid Mode first" }
+  }
   try {
     await apiFetch(path, { method, body: body instanceof FormData ? Object.fromEntries(body) : body })
   } catch (e) {

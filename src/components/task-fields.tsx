@@ -25,7 +25,8 @@ export function TaskFields({ task }: { task?: Task }) {
   )
 }
 
-export function RewardDestinationField({ goals, defaultValue, hint }: { goals: Goal[]; defaultValue?: string | null; hint: string }) {
+export function RewardDestinationField({ goals: all, defaultValue, hint }: { goals: Goal[]; defaultValue?: string | null; hint: string }) {
+  const goals = all.filter((g) => g.status !== "ACHIEVED")
   return (
     <Field
       label="Reward goes to"

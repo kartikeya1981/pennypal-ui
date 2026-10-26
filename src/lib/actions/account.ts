@@ -28,3 +28,12 @@ export async function saveSplit(kidId: string, fd: FormData) {
 export async function addEarning(kidId: string, fd: FormData) {
   return send(`/kids/${kidId}/earnings`, "POST", fd)
 }
+
+/** Real money handed over: debits the Wallet or a goal jar. */
+export async function cashOut(kidId: string, fd: FormData) {
+  return send(`/kids/${kidId}/payouts`, "POST", fd)
+}
+
+export async function moveCoins(kidId: string, fd: FormData) {
+  return send(`/kids/${kidId}/transfers`, "POST", fd)
+}

@@ -3,6 +3,7 @@
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { ApiError, apiFetch, TOKEN_COOKIE } from "@/lib/api"
+import { KID_MODE_COOKIE } from "@/lib/cookies"
 
 export type AuthState = { error?: string; values?: Record<string, string> } | null
 
@@ -14,7 +15,9 @@ async function authenticate(path: "/auth/login" | "/auth/register", fd: FormData
     if (e instanceof ApiError) return { error: e.message, values: { name: String(fd.get("name") ?? ""), email: String(fd.get("email") ?? "") } }
     throw e
   }
-  ;(await cookies()).set(TOKEN_COOKIE, token, {
+  const jar = await cookies()
+  jar.delete(KID_MODE_COOKIE)
+  jar.set(TOKEN_COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
@@ -33,6 +36,8 @@ export async function register(_prev: AuthState, fd: FormData): Promise<AuthStat
 }
 
 export async function logout() {
-  ;(await cookies()).delete(TOKEN_COOKIE)
+  const jar = await cookies()
+  jar.delete(TOKEN_COOKIE)
+  jar.delete(KID_MODE_COOKIE)
   redirect("/")
 }

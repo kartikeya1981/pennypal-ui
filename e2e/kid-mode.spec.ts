@@ -1,0 +1,87 @@
+import { expect, test } from "./fixtures"
+
+test.describe("Kid Mode", () => {
+  test("parent sets a PIN, the kid uses Kid Mode and only the PIN gets back out @mobile", async ({ api, shell, authedPage: page }) => {
+    const kid = await api.addKid({ name: "Aarav Kumar" })
+    const bike = await api.addGoal(kid.id, { name: "Bike", emoji: "🚲", targetAmount: 100 })
+    await api.earn(kid.id, { kind: "EXTRA", amount: 40, note: "Gift", goalId: bike.id })
+    await api.addTask(kid.id, { title: "Water the plants", reward: 20 })
+    await shell.goto(`/kids/${kid.id}`)
+    const dialog = page.getByRole("dialog")
+
+    await page.getByRole("button", { name: "Kid Mode" }).click()
+    await dialog.getByLabel("4-digit PIN").fill("2468")
+    await dialog.getByLabel("Your account password").fill("wrong-password")
+    await dialog.getByRole("button", { name: "Start Kid Mode" }).click()
+    await expect(dialog).toContainText("Your password is incorrect")
+    await dialog.getByLabel("Your account password").fill(api.user.password)
+    await dialog.getByRole("button", { name: "Start Kid Mode" }).click()
+
+    await expect(page).toHaveURL(/\/kid$/)
+    await expect(page.getByRole("heading", { name: "Hi Aarav!" })).toBeVisible()
+    await expect(page.getByRole("region", { name: "My money" })).toContainText("40 Kid Coins")
+    await expect(page.getByRole("article", { name: "Bike" })).toContainText("60 Kid Coins more to go")
+    await expect(page.getByRole("complementary", { name: "Money tip" })).toBeVisible()
+    await expect(page.getByRole("listitem", { name: "Goal getter (not earned yet)" })).toBeVisible()
+    await expect(page.getByRole("button", { name: /Cash out|Move coins|Edit/ })).toHaveCount(0)
+    await expect(page.getByRole("navigation", { name: "Main" })).toHaveCount(0)
+
+    const task = page.getByRole("article", { name: "Water the plants" })
+    await task.getByRole("button", { name: "I did it" }).click()
+    await dialog.getByLabel("Reward goes to").selectOption({ label: "🚲 Bike" })
+    await dialog.getByRole("button", { name: "Send to a grown-up" }).click()
+    await expect(dialog).toBeHidden()
+    await expect(task).toContainText("Waiting for a grown-up")
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+
+    // Parent pages bounce back to Kid Mode
+    for (const path of ["/dashboard", `/kids/${kid.id}`, "/settings"]) {
+      await page.goto(path)
+      await expect(page).toHaveURL(/\/kid$/)
+    }
+
+    await page.getByRole("button", { name: "Exit Kid Mode" }).click()
+    await dialog.getByLabel("PIN").fill("1111")
+    await dialog.getByRole("button", { name: "Unlock" }).click()
+    await expect(dialog).toContainText("That PIN isn't right")
+    await dialog.getByLabel("PIN").fill("2468")
+    await dialog.getByRole("button", { name: "Unlock" }).click()
+    await expect(page).toHaveURL(new RegExp(`/kids/${kid.id}$`))
+    await expect(page.getByRole("article", { name: "Water the plants" })).toContainText("Waiting for you")
+  })
+
+  test("with a PIN already set, entering Kid Mode needs no extra fields and badges show once earned", async ({ api, shell, authedPage: page }) => {
+    const kid = await api.addKid({ name: "Meera" })
+    const book = await api.addGoal(kid.id, { name: "Book", emoji: "📚", targetAmount: 50 })
+    await api.earn(kid.id, { kind: "EXTRA", amount: 50, note: "Gift", goalId: book.id })
+    await api.payout(kid.id, { amount: 50, goalId: book.id, note: "Bought it" })
+    await api.setPin("1357")
+    await shell.goto(`/kids/${kid.id}`)
+    await page.getByRole("button", { name: "Kid Mode" }).click()
+    const dialog = page.getByRole("dialog")
+    await expect(dialog.getByRole("textbox")).toHaveCount(0)
+    await dialog.getByRole("button", { name: "Start Kid Mode" }).click()
+    await expect(page).toHaveURL(/\/kid$/)
+    await expect(page.getByRole("article", { name: "Book" })).toContainText("You did it!")
+    await expect(page.getByRole("listitem", { name: "Goal getter", exact: true })).toBeVisible()
+    await expect(page.getByRole("listitem", { name: "Dream come true", exact: true })).toBeVisible()
+    await expect(page.getByLabel("Money in and out")).toContainText("Cash out · Bought it")
+  })
+
+  test("parent sets and changes the PIN in Settings", async ({ api, shell, authedPage: page }) => {
+    await shell.goto("/settings")
+    const card = page.getByRole("region", { name: "Kid Mode PIN" })
+    await expect(card).toContainText("Not set yet")
+    await card.getByLabel("4-digit PIN").fill("1234")
+    await card.getByLabel("Your account password").fill(api.user.password)
+    await card.getByRole("button", { name: "Set PIN" }).click()
+    await shell.expectToast("Kid Mode PIN saved")
+    await expect(card).toContainText("PIN is set")
+    await card.getByLabel("New 4-digit PIN").fill("9876")
+    await card.getByLabel("Your account password").fill(api.user.password)
+    await card.getByRole("button", { name: "Change PIN" }).click()
+    await expect(card.getByLabel("New 4-digit PIN")).toHaveValue("")
+    const res = await api.post<unknown>("/me/kid-mode/unlock", { pin: "9876" })
+    expect(res).toBeUndefined()
+  })
+})
