@@ -89,7 +89,7 @@ export function FormDialog({
           className="grid gap-4"
         >
           <div className="grid gap-3 sm:grid-cols-2">{children}</div>
-          {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
+          {state?.error && <p role="alert" className="text-sm text-destructive">{state.error}</p>}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel

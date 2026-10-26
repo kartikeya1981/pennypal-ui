@@ -40,7 +40,7 @@ export default defineConfig({
           url: `${API_URL}/health`,
           reuseExistingServer: !CI,
           timeout: 60_000,
-          env: { PORT: new URL(API_URL).port || "4000", CORS_ORIGIN: UI_URL },
+          env: { PORT: new URL(API_URL).port || "4000", CORS_ORIGIN: UI_URL, MONTHLY_JOB: "off" },
         },
         {
           name: "ui",

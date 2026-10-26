@@ -54,7 +54,7 @@ export type StatementLeg = { goalId: string | null; goalName: string | null; goa
 
 export type StatementRow = {
   id: string
-  type: "MONTHLY_EARNING" | "EXTRA_EARNING" | "TRANSFER"
+  type: "MONTHLY_EARNING" | "EXTRA_EARNING" | "TASK_EARNING" | "TRANSFER"
   note: string | null
   createdAt: Date
   /** Net change to the kid's total balance. */
@@ -62,4 +62,22 @@ export type StatementRow = {
   balanceAfter: number
   /** Net change per pot (Wallet or goal jar). */
   legs: StatementLeg[]
+}
+
+export type TaskRecurrence = "NONE" | "WEEKLY" | "MONTHLY"
+export type TaskStatus = "OPEN" | "SUBMITTED" | "APPROVED"
+
+export type Task = {
+  id: string
+  kidId: string
+  title: string
+  reward: number
+  dueDate: string | Date | null
+  recurrence: TaskRecurrence
+  status: TaskStatus
+  /** Where the reward goes: a goal id, or null for the Wallet. */
+  rewardGoalId: string | null
+  submittedAt: string | Date | null
+  approvedAt: string | Date | null
+  createdAt: string | Date
 }

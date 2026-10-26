@@ -63,9 +63,23 @@ export function splitRuleLabel(type: string, value: number) {
 export function entryTitle(type: string, note: string | null) {
   if (type === "MONTHLY_EARNING") return `Monthly Earning${note ? ` · ${note}` : ""}`
   if (type === "EXTRA_EARNING") return `Extra earning${note ? ` · ${note}` : ""}`
+  if (type === "TASK_EARNING") return `Task reward${note ? ` · ${note}` : ""}`
   return note ?? "Moved Kid Coins"
 }
 
 export function firstName(name: string) {
   return name.trim().split(/\s+/)[0] ?? name
+}
+
+/** "2026-10-31" for a date input. */
+export function isoDay(d: string | Date) {
+  return new Date(d).toISOString().slice(0, 10)
+}
+
+export function taskSchedule(dueDate: string | Date | null, recurrence: string) {
+  const due = dueDate
+    ? `Due ${new Date(dueDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" })}`
+    : null
+  const repeat = recurrence === "WEEKLY" ? "Repeats weekly" : recurrence === "MONTHLY" ? "Repeats monthly" : null
+  return [due, repeat].filter(Boolean).join(" · ")
 }
