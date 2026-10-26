@@ -1,6 +1,6 @@
 "use client"
 
-import { useActionState, useState } from "react"
+import { startTransition, useActionState, useState } from "react"
 import { Pencil, Plus } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
@@ -74,7 +74,15 @@ export function FormDialog({
           <DialogTitle>{title}</DialogTitle>
           {description && <DialogDescription>{description}</DialogDescription>}
         </DialogHeader>
-        <form action={formAction} className="grid gap-4">
+        <form
+          // Submit via onSubmit rather than `action` so React doesn't reset the fields when the API rejects them.
+          onSubmit={(e) => {
+            e.preventDefault()
+            const fd = new FormData(e.currentTarget)
+            startTransition(() => formAction(fd))
+          }}
+          className="grid gap-4"
+        >
           <div className="grid gap-3 sm:grid-cols-2">{children}</div>
           {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
           <DialogFooter>

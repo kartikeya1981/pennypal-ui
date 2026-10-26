@@ -35,6 +35,8 @@ test.describe("kid profiles", () => {
     await form.save()
     await expect(form.error()).toHaveText("PennyPal is for kids under 18")
     await expect(form.root()).toBeVisible()
+    await expect(form.root().getByLabel("Name")).toHaveValue("Too Old")
+    await expect(form.root().getByLabel("Monthly earning (Kid Coins)")).toHaveValue("100")
   })
 
   test("opens a kid's page, edits the profile and deletes it @mobile", async ({ api, shell, authedPage: page }) => {

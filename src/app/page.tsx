@@ -8,7 +8,7 @@ import { TOKEN_COOKIE } from "@/lib/api"
 
 const FEATURES = [
   { icon: Users, title: "A profile for every kid", text: "Parents run the accounts, so kids learn without needing a phone of their own." },
-  { icon: Wallet, title: "Monthly Earnings", text: "Turn pocket money into an Earning of Kid Coins that arrives on the same day every month." },
+  { icon: Wallet, title: "Monthly Earnings", text: "A Monthly Earning of Kid Coins that arrives on the same day every month." },
   { icon: Target, title: "Goals worth saving for", text: "A video game, a tennis racket, new shoes: set goals together and watch the jars fill up." },
   { icon: ListChecks, title: "Extra tasks, extra coins", text: "Reading a book or helping with chores earns bonus Kid Coins." },
   { icon: HandCoins, title: "Real rewards", text: "When a goal is reached, hand over real money and record it as a payout." },

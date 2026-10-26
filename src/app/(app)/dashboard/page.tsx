@@ -24,9 +24,9 @@ export default async function DashboardPage() {
       {kids.length === 0 ? (
         <EmptyState title="No kids yet" description="Add a profile for each of your kids to start their PennyPal journey." />
       ) : (
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {kids.map((kid) => (
-            <li key={kid.id}>
+            <li key={kid.id} className="min-w-0">
               <Link href={`/kids/${kid.id}`} className="block rounded-xl focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none">
                 <Card className="transition-colors hover:bg-muted/40">
                   <CardContent className="flex items-center gap-4">
